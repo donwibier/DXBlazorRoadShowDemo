@@ -1,0 +1,165 @@
+﻿@typeparam TItem
+@using BandBookerWasm.Shared
+
+<div class="row">
+	<div class="card-group col-12">
+		<div class="card col-5">
+			<div class="card-body">
+				<div class="card-title"><h5>All @ItemTypePlural</h5></div>
+				<DxListBox @ref="allGrid" @key="@allKey" Data="@RemainingItems" TextFieldName="@TextPropertyName"
+						   SelectedItems="@RemainingSelection"
+						   SelectedItemsChanged="@RemainingSelectionChanged">
+				</DxListBox>
+			</div>
+		</div>
+	
+		<div class="card col-2">
+			<div class="btn-group-vertical align-middle">
+				<button class="btn btn-outline-primary" @onclick="AddSelectedItem" type="button" disabled="@AddSelectedItemButtonDisabled">
+					&gt;
+				</button>
+				<button class="btn btn-outline-primary" @onclick="@AddAllItems" type="button">
+					&gt;&gt;
+				</button>
+				<button class="btn btn-outline-primary" @onclick="@RemoveSelectedItem" type="button" disabled="@RemoveSelectedItemButtonDisabled">
+					&lt;
+				</button>
+				<button class="btn btn-outline-primary" @onclick="@RemoveAllItems" type="button">
+					&lt;&lt;
+				</button>
+			</div>
+		</div>
+		<div class="card col-5">
+			<div class="card-body">
+				<div class="card-title"><h5>Selected @ItemTypePlural</h5></div>
+				<DxListBox @ref="selGrid" @key="@selKey" Data="@SelectedItems" TextFieldName="@TextPropertyName"
+							SelectedItems="@SelectedSelection"
+							SelectedItemsChanged="@SelectedSelectionChanged">
+				</DxListBox>
+			</div>
+		</div>
+	</div>
+</div>
+
+@code {
+
+	DxListBox<TItem> allGrid;
+	DxListBox<TItem> selGrid;
+	Guid allKey = Guid.NewGuid();
+	Guid selKey = Guid.NewGuid();
+
+	protected void RefreshBoth()
+	{
+		RefreshRemaining();
+		RefreshSelected();
+	}
+	protected void RefreshRemaining() { allKey = Guid.NewGuid(); }
+	protected void RefreshSelected() { selKey = Guid.NewGuid(); }
+
+	public string SelectedItemTypePlural { get => $"Selected {ItemTypePlural}"; }
+	public string AllItemTypePlural { get => $"All {ItemTypePlural}"; }
+
+	[Parameter]
+	public string ItemType { get; set; }
+
+	[Parameter]
+	public string ItemTypePlural { get; set; }
+
+	[Parameter]
+	public string TextPropertyName { get; set; }
+
+	[Parameter]
+	public List<TItem> AllItems { get; set; }
+
+	[Parameter] public List<TItem> SelectedItems { get; set; }
+
+
+	public List<TItem> RemainingItems
+	{
+		get => AllItems.Where(x => !SelectedItems.Contains(x)).ToList();
+		set { var dummy = value; }
+	}
+
+	bool AddSelectedItemButtonDisabled = true;
+	bool RemoveSelectedItemButtonDisabled = true;
+
+
+	IEnumerable<TItem> RemainingSelection { get; set; }
+
+	public void RemainingSelectionChanged(IEnumerable<TItem> selectedItems)
+	{
+		RemainingSelection = selectedItems;
+		//InvokeAsync(StateHasChanged);
+	}
+
+	IEnumerable<TItem> SelectedSelection { get; set; }
+
+	public void SelectedSelectionChanged(IEnumerable<TItem> selectedItems)
+	{
+		SelectedSelection = selectedItems;
+		//InvokeAsync(StateHasChanged);
+	}
+
+	protected override void OnParametersSet()
+	{
+		if (RemainingItems.Count() > 0)
+		{
+			RemainingSelection = RemainingItems.Take(1).ToList();
+		}
+		else if (SelectedItems.Count() > 0)
+		{
+			SelectedSelection = SelectedItems.Take(1).ToList();
+		}
+		UpdateButtonEnabledStates();
+	}
+
+	void UpdateButtonEnabledStates()
+	{
+		AddSelectedItemButtonDisabled = !RemainingItems.Any();
+		RemoveSelectedItemButtonDisabled = !SelectedItems.Any();
+		InvokeAsync(StateHasChanged);
+	}
+
+	void AddAllItems()
+	{
+		SelectedItems.AddRange(RemainingItems);
+		if (SelectedItems.Count > 0)
+		{
+			SelectedSelection = SelectedItems.Take(1).ToList();
+		}
+		RefreshBoth();
+		UpdateButtonEnabledStates();
+	}
+
+	void RemoveAllItems()
+	{
+		SelectedItems.Clear();
+		if (RemainingItems.Count() > 0)
+		{
+			SelectedSelection = SelectedItems.Take(1).ToList();
+		}
+		RefreshBoth();
+		UpdateButtonEnabledStates();
+	}
+
+	void AddSelectedItem()
+	{
+		if (RemainingSelection.Count() > 0)
+		{
+			SelectedItems.AddRange(RemainingSelection);
+			RefreshSelected();
+			UpdateButtonEnabledStates();
+		}
+	}
+
+	void RemoveSelectedItem()
+	{
+		if (SelectedSelection.Count() > 0)
+		{
+			SelectedItems = SelectedItems.Where(x => !SelectedSelection.Contains(x)).ToList();
+			RefreshRemaining();
+			UpdateButtonEnabledStates();
+		}
+
+	}
+}
