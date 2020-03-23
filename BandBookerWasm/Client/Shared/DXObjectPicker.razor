@@ -6,25 +6,28 @@
 		<div class="card col-5">
 			<div class="card-body">
 				<div class="card-title"><h5>All @ItemTypePlural</h5></div>
-				<DxListBox @ref="allGrid" @key="@allKey" Data="@RemainingItems" TextFieldName="@TextPropertyName"
-						   SelectedItems="@RemainingSelection"
-						   SelectedItemsChanged="@RemainingSelectionChanged">
+				<DxListBox @ref="allGrid" @key="@allKey" Data="@RemainingItems" CssClass="dxobjectpicker" 
+						   TextFieldName="@TextPropertyName" 
+						    SelectionMode="ListBoxSelectionMode.Multiple"
+							ShowCheckboxes="true"
+						    SelectedItems="@RemainingSelection"
+						    SelectedItemsChanged="@RemainingSelectionChanged">
 				</DxListBox>
 			</div>
 		</div>
 	
 		<div class="card col-2">
 			<div class="btn-group-vertical align-middle">
-				<button class="btn btn-outline-primary" @onclick="AddSelectedItem" type="button" disabled="@AddSelectedItemButtonDisabled">
+				<button class="btn btn-outline-primary m-1" @onclick="AddSelectedItem" type="button" disabled="@AddSelectedItemButtonDisabled">
 					&gt;
 				</button>
-				<button class="btn btn-outline-primary" @onclick="@AddAllItems" type="button">
+				<button class="btn btn-outline-primary m-1" @onclick="@AddAllItems" type="button">
 					&gt;&gt;
 				</button>
-				<button class="btn btn-outline-primary" @onclick="@RemoveSelectedItem" type="button" disabled="@RemoveSelectedItemButtonDisabled">
+				<button class="btn btn-outline-primary m-1" @onclick="@RemoveSelectedItem" type="button" disabled="@RemoveSelectedItemButtonDisabled">
 					&lt;
 				</button>
-				<button class="btn btn-outline-primary" @onclick="@RemoveAllItems" type="button">
+				<button class="btn btn-outline-primary m-1" @onclick="@RemoveAllItems" type="button">
 					&lt;&lt;
 				</button>
 			</div>
@@ -32,10 +35,13 @@
 		<div class="card col-5">
 			<div class="card-body">
 				<div class="card-title"><h5>Selected @ItemTypePlural</h5></div>
-				<DxListBox @ref="selGrid" @key="@selKey" Data="@SelectedItems" TextFieldName="@TextPropertyName"
+				<DxListBox @ref="selGrid" @key="@selKey" Data="@SelectedItems" CssClass="dxobjectpicker" 
+						   TextFieldName="@TextPropertyName"
+						    SelectionMode="ListBoxSelectionMode.Multiple"
+							ShowCheckboxes="true"
 							SelectedItems="@SelectedSelection"
 							SelectedItemsChanged="@SelectedSelectionChanged">
-				</DxListBox>
+				</DxListBox>				
 			</div>
 		</div>
 	</div>
@@ -43,11 +49,9 @@
 
 @code {
 
-	DxListBox<TItem> allGrid;
-	DxListBox<TItem> selGrid;
-	Guid allKey = Guid.NewGuid();
-	Guid selKey = Guid.NewGuid();
-
+	DxListBox<TItem> allGrid; Guid allKey = Guid.NewGuid();
+	DxListBox<TItem> selGrid; Guid selKey = Guid.NewGuid();
+		
 	protected void RefreshBoth()
 	{
 		RefreshRemaining();
@@ -71,7 +75,8 @@
 	[Parameter]
 	public List<TItem> AllItems { get; set; }
 
-	[Parameter] public List<TItem> SelectedItems { get; set; }
+	[Parameter] 
+	public List<TItem> SelectedItems { get; set; } = new List<TItem>();
 
 
 	public List<TItem> RemainingItems
@@ -89,7 +94,6 @@
 	public void RemainingSelectionChanged(IEnumerable<TItem> selectedItems)
 	{
 		RemainingSelection = selectedItems;
-		//InvokeAsync(StateHasChanged);
 	}
 
 	IEnumerable<TItem> SelectedSelection { get; set; }
@@ -97,7 +101,6 @@
 	public void SelectedSelectionChanged(IEnumerable<TItem> selectedItems)
 	{
 		SelectedSelection = selectedItems;
-		//InvokeAsync(StateHasChanged);
 	}
 
 	protected override void OnParametersSet()
@@ -144,9 +147,10 @@
 
 	void AddSelectedItem()
 	{
-		if (RemainingSelection.Count() > 0)
+		if (RemainingSelection?.Count() > 0)
 		{
 			SelectedItems.AddRange(RemainingSelection);
+			RemainingSelection = null;
 			RefreshSelected();
 			UpdateButtonEnabledStates();
 		}
@@ -154,9 +158,10 @@
 
 	void RemoveSelectedItem()
 	{
-		if (SelectedSelection.Count() > 0)
+		if (SelectedSelection?.Count() > 0)
 		{
 			SelectedItems = SelectedItems.Where(x => !SelectedSelection.Contains(x)).ToList();
+			SelectedSelection = null;
 			RefreshRemaining();
 			UpdateButtonEnabledStates();
 		}

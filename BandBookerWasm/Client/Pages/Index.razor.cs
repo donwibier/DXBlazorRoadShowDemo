@@ -62,7 +62,7 @@ namespace BandBookerWasm.Client.Pages
             // model properties
             [Required]
             public string Name { get; set; }
-            public IEnumerable<Instrument> Instruments { get; set; }            
+            public List<Instrument> Instruments { get; set; }            
             
         }
 		#endregion
