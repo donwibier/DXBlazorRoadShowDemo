@@ -1,14 +1,14 @@
 ﻿@page "/"
 @using BandBookerWasm.Shared.Models;
 
-@*The DXObject picker works fine here*@
-@*<h2>Object picker test on Instruments</h2>
+@*The DXObject picker works fine here *@
+<h2>Object picker test on Instruments</h2>
 	<DXObjectPicker AllItems="@DataMan.Instruments"
 					SelectedItems="@DummySelection"
 					ItemType="Instrument"
 					ItemTypePlural="Instruments"
 					TextPropertyName="Name">
-	</DXObjectPicker>*@
+	</DXObjectPicker>
 
 <h2>Instruments</h2>
 
@@ -51,17 +51,17 @@
 				</DxFormLayoutItem>
 				<DxFormLayoutItem Caption="Instruments:" ColSpanMd="12" Context="MusicianEditFormCtx">
 					<Template>
-						<DxTagBox NullText="Select the instruments this musician plays"
+						@*<DxTagBox NullText="Select the instruments this musician plays"
 								  Data="@Instruments"
 								  @bind-SelectedItems="@musicianModel.Instruments"
-								  TextFieldName="Name" />
+								  TextFieldName="Name" />*@
 						@*The DXObject picker causes a runtime error here*@
-						@*<DXObjectPicker AllItems="@DataMan.Instruments"
-											SelectedItems="@musicianModel.Instruments.ToList()"
+						<DXObjectPicker AllItems="@DataMan.Instruments"
+											SelectedItems="@musicianModel.Instruments"
 											ItemType="Instrument"
 											ItemTypePlural="Instruments"
 											TextPropertyName="Name">
-							</DXObjectPicker>*@
+							</DXObjectPicker>
 					</Template>
 				</DxFormLayoutItem>
 

@@ -6,36 +6,36 @@
 		<div class="card col-5">
 			<div class="card-body">
 				<div class="card-title"><h5>All @ItemTypePlural</h5></div>
-				<DxListBox @ref="allGrid" @key="@allKey" Data="@RemainingItems" TextFieldName="@TextPropertyName"
-						   SelectedItems="@RemainingSelection"
-						   SelectedItemsChanged="@RemainingSelectionChanged">
+				<DxListBox @ref="allGrid" @key="@allKey" Data="@RemainingItems" CssClass="dxobjectpicker" 
+						   TextFieldName="@TextPropertyName" 
+						    SelectionMode="ListBoxSelectionMode.Multiple"
+							ShowCheckboxes="true"
+						    @bind-SelectedItems="@RemainingSelection">
 				</DxListBox>
 			</div>
 		</div>
 	
 		<div class="card col-2">
 			<div class="btn-group-vertical align-middle">
-				<button class="btn btn-outline-primary" @onclick="AddSelectedItem" type="button" disabled="@AddSelectedItemButtonDisabled">
-					&gt;
-				</button>
-				<button class="btn btn-outline-primary" @onclick="@AddAllItems" type="button">
-					&gt;&gt;
-				</button>
-				<button class="btn btn-outline-primary" @onclick="@RemoveSelectedItem" type="button" disabled="@RemoveSelectedItemButtonDisabled">
-					&lt;
-				</button>
-				<button class="btn btn-outline-primary" @onclick="@RemoveAllItems" type="button">
-					&lt;&lt;
-				</button>
+				<DxButton RenderStyle="ButtonRenderStyle.Primary" Click="@AddSelectionClick"
+						  Enabled="@AddSelectedEnabled" Text="&gt;" />
+				<DxButton RenderStyle="ButtonRenderStyle.Primary" Click="@AddAllClick"
+						  Enabled="@AddAllEnabled" Text="&gt;&gt;" />
+				<DxButton RenderStyle="ButtonRenderStyle.Primary" Click="@RemoveSelectionClick"
+						  Enabled="@RemoveSelectedEnabled" Text="&lt;" />
+				<DxButton RenderStyle="ButtonRenderStyle.Primary" Click="@RemoveAllClick"
+						  Enabled="@RemoveAllEnabled" Text="&lt;&lt;" />				
 			</div>
 		</div>
 		<div class="card col-5">
 			<div class="card-body">
 				<div class="card-title"><h5>Selected @ItemTypePlural</h5></div>
-				<DxListBox @ref="selGrid" @key="@selKey" Data="@SelectedItems" TextFieldName="@TextPropertyName"
-							SelectedItems="@SelectedSelection"
-							SelectedItemsChanged="@SelectedSelectionChanged">
-				</DxListBox>
+				<DxListBox @ref="selGrid" @key="@selKey" Data="@SelectedItems" CssClass="dxobjectpicker" 
+						   TextFieldName="@TextPropertyName"
+						    SelectionMode="ListBoxSelectionMode.Multiple"
+							ShowCheckboxes="true"
+							@bind-SelectedItems="@SelectedSelection">
+				</DxListBox>				
 			</div>
 		</div>
 	</div>
@@ -43,18 +43,19 @@
 
 @code {
 
-	DxListBox<TItem> allGrid;
-	DxListBox<TItem> selGrid;
-	Guid allKey = Guid.NewGuid();
-	Guid selKey = Guid.NewGuid();
+		DxListBox<TItem> allGrid; Guid allKey = Guid.NewGuid();
+		DxListBox<TItem> selGrid; Guid selKey = Guid.NewGuid();
 
-	protected void RefreshBoth()
-	{
-		RefreshRemaining();
-		RefreshSelected();
-	}
-	protected void RefreshRemaining() { allKey = Guid.NewGuid(); }
-	protected void RefreshSelected() { selKey = Guid.NewGuid(); }
+		bool AddSelectedEnabled { get => RemainingItems.Any() && RemainingSelection != null && RemainingSelection.Any(); }
+		bool RemoveSelectedEnabled { get => SelectedItems.Any() && SelectedSelection != null && SelectedSelection.Any(); }
+		bool AddAllEnabled { get => RemainingItems.Any(); }
+		bool RemoveAllEnabled { get => SelectedItems.Any(); }
+
+		void UpdateCtrls()
+		{
+			allKey = Guid.NewGuid();
+			selKey = Guid.NewGuid();
+		}
 
 	public string SelectedItemTypePlural { get => $"Selected {ItemTypePlural}"; }
 	public string AllItemTypePlural { get => $"All {ItemTypePlural}"; }
@@ -71,8 +72,14 @@
 	[Parameter]
 	public List<TItem> AllItems { get; set; }
 
-	[Parameter] public List<TItem> SelectedItems { get; set; }
+	[Parameter]
+	public List<TItem> SelectedItems { get; set; } = new List<TItem>();
 
+
+	protected override void OnParametersSet()
+	{
+		AutoSelectFirstOnes();
+	}
 
 	public List<TItem> RemainingItems
 	{
@@ -80,27 +87,20 @@
 		set { var dummy = value; }
 	}
 
-	bool AddSelectedItemButtonDisabled = true;
-	bool RemoveSelectedItemButtonDisabled = true;
-
-
-	IEnumerable<TItem> RemainingSelection { get; set; }
-
-	public void RemainingSelectionChanged(IEnumerable<TItem> selectedItems)
-	{
-		RemainingSelection = selectedItems;
-		//InvokeAsync(StateHasChanged);
+	private IEnumerable<TItem> _RemainingSelection = new TItem[] { };
+	public IEnumerable<TItem> RemainingSelection {
+		get=>_RemainingSelection;
+		set { _RemainingSelection = value; InvokeAsync(StateHasChanged); }
 	}
 
-	IEnumerable<TItem> SelectedSelection { get; set; }
-
-	public void SelectedSelectionChanged(IEnumerable<TItem> selectedItems)
-	{
-		SelectedSelection = selectedItems;
-		//InvokeAsync(StateHasChanged);
+	private IEnumerable<TItem> _SelectedSelection = new TItem[] { };
+	public IEnumerable<TItem> SelectedSelection {
+		get=>_SelectedSelection;
+		set { _SelectedSelection = value; InvokeAsync(StateHasChanged); }
 	}
 
-	protected override void OnParametersSet()
+
+	void AutoSelectFirstOnes()
 	{
 		if (RemainingItems.Count() > 0)
 		{
@@ -110,56 +110,41 @@
 		{
 			SelectedSelection = SelectedItems.Take(1).ToList();
 		}
-		UpdateButtonEnabledStates();
 	}
 
-	void UpdateButtonEnabledStates()
+	void AddSelectionClick(MouseEventArgs args)
 	{
-		AddSelectedItemButtonDisabled = !RemainingItems.Any();
-		RemoveSelectedItemButtonDisabled = !SelectedItems.Any();
-		InvokeAsync(StateHasChanged);
-	}
-
-	void AddAllItems()
-	{
-		SelectedItems.AddRange(RemainingItems);
-		if (SelectedItems.Count > 0)
-		{
-			SelectedSelection = SelectedItems.Take(1).ToList();
-		}
-		RefreshBoth();
-		UpdateButtonEnabledStates();
-	}
-
-	void RemoveAllItems()
-	{
-		SelectedItems.Clear();
-		if (RemainingItems.Count() > 0)
-		{
-			SelectedSelection = SelectedItems.Take(1).ToList();
-		}
-		RefreshBoth();
-		UpdateButtonEnabledStates();
-	}
-
-	void AddSelectedItem()
-	{
-		if (RemainingSelection.Count() > 0)
+		if (RemainingSelection?.Count() > 0)
 		{
 			SelectedItems.AddRange(RemainingSelection);
-			RefreshSelected();
-			UpdateButtonEnabledStates();
+			AutoSelectFirstOnes();
+			UpdateCtrls();
 		}
 	}
 
-	void RemoveSelectedItem()
+	void AddAllClick(MouseEventArgs args)
 	{
-		if (SelectedSelection.Count() > 0)
+		SelectedItems.AddRange(RemainingItems);
+		AutoSelectFirstOnes();
+		UpdateCtrls();
+
+	}
+
+	void RemoveSelectionClick(MouseEventArgs args)
+	{
+		if (SelectedSelection?.Count() > 0)
 		{
 			SelectedItems = SelectedItems.Where(x => !SelectedSelection.Contains(x)).ToList();
-			RefreshRemaining();
-			UpdateButtonEnabledStates();
+			AutoSelectFirstOnes();
+			UpdateCtrls();
 		}
+	}
+
+	void RemoveAllClick(MouseEventArgs args)
+	{
+		SelectedItems.Clear();
+		AutoSelectFirstOnes();
+		UpdateCtrls();
 
 	}
 }
