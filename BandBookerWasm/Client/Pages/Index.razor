@@ -1,87 +1,42 @@
 ﻿@page "/"
 @using BandBookerWasm.Shared.Models;
 
-@*The DXObject picker works fine here *@
-<h2>Object picker test on Instruments</h2>
-	<DXObjectPicker AllItems="@DataMan.Instruments"
-					SelectedItems="@DummySelection"
-					ItemType="Instrument"
-					ItemTypePlural="Instruments"
-					TextPropertyName="Name">
-	</DXObjectPicker>
+<DxTabs @bind-ActiveTabIndex="@ActiveTabIndex">
+	<DxTab Text="Instruments"></DxTab>
+	<DxTab Text="Musicians"></DxTab>
+	<DxTab Text="Events"></DxTab>
+	<DxTab Text="Sessions"></DxTab>
+</DxTabs>
+<div class="card dxbs-border-top-0 dxbs-border-radius-top-0">
+	<div class="card-body">
+		@switch (ActiveTabIndex)
+		{
+			case 0:
+				<DXInstrumentEditor Instruments="@DataMan.Instruments"></DXInstrumentEditor>
+				break;
+			case 1:
+				<DXMusicianEditor Instruments="@DataMan.Instruments" Musicians="@DataMan.Musicians"></DXMusicianEditor>
+				break;
+			case 2:
+				<DXEventEditor Events="@DataMan.Events"></DXEventEditor>
+				break;
+			case 3:
+				<DXSessionEditor Sessions="@DataMan.Sessions" Events="@DataMan.Events"></DXSessionEditor>
+				break;
 
-<h2>Instruments</h2>
+		}
+	</div>
+</div>
 
-<DxDataGrid KeyFieldName="@nameof(Instrument.Id)"
-			Data="@Instruments"
-			ShowFilterRow="false"
-			ShowPager="false"
-			RowInserting="@InstrumentInsertAction"
-			RowUpdating="@InstrumentUpdateAction"
-			RowRemoving="@InstrumentRemoveAction">
-	<Columns>
-		<DxDataGridCommandColumn Width="150px" />
-		<DxDataGridColumn Field="@nameof(Instrument.Name)" Caption="Instrument" />
-	</Columns>
-</DxDataGrid>
+@code{
+	[Inject]
+	public BandBookerDataManager DataMan { get; set; }
 
-<br />
-<br />
-<h2>Musicians</h2>
+	int activeTabIndex = 0;
+	public int ActiveTabIndex
+	{
+		get => activeTabIndex;
+		set { activeTabIndex = value; InvokeAsync(StateHasChanged); }
+	}
 
-<DxDataGrid @ref="gridMusicians" @key="keyMusicians" KeyFieldName="@nameof(Musician.Id)"
-			Data="@Musicians"
-			ShowFilterRow="false"
-			ShowPager="false"
-			RowInsertStart="@(() => OnMusicianEditing(null))"
-			RowEditStart="@((musician) => OnMusicianEditing(musician))"
-			RowRemoving="@((musician) => OnMusicianRemoving(musician))">
-	<Columns>
-		<DxDataGridCommandColumn Width="150px" />
-		<DxDataGridColumn Field="@nameof(Instrument.Name)" Caption="Instrument" />
-	</Columns>
-	<EditFormTemplate>
-		<EditForm Model="@musicianModel" Context="MusicianEditCtx" OnValidSubmit="@MusicianSubmitAction">
-			<DataAnnotationsValidator />
-			<DxFormLayout>
-				<DxFormLayoutItem Caption="Musician name:" ColSpanMd="12" Context="MusicianEditFormCtx">
-					<Template>
-						<DxTextBox @bind-Text="@musicianModel.Name" />
-					</Template>
-				</DxFormLayoutItem>
-				<DxFormLayoutItem Caption="Instruments:" ColSpanMd="12" Context="MusicianEditFormCtx">
-					<Template>
-						@*<DxTagBox NullText="Select the instruments this musician plays"
-								  Data="@Instruments"
-								  @bind-SelectedItems="@musicianModel.Instruments"
-								  TextFieldName="Name" />*@
-						@*The DXObject picker causes a runtime error here*@
-						<DXObjectPicker AllItems="@DataMan.Instruments"
-											SelectedItems="@musicianModel.Instruments"
-											ItemType="Instrument"
-											ItemTypePlural="Instruments"
-											TextPropertyName="Name">
-							</DXObjectPicker>
-					</Template>
-				</DxFormLayoutItem>
-
-				<DxFormLayoutItem ColSpanMd="12" Context="MusicianEditFormCtx">
-					<Template>
-						<ValidationSummary />
-					</Template>
-				</DxFormLayoutItem>
-				<DxFormLayoutItem ColSpanMd="12" Context="MusicianEditFormCtx">
-					<Template>
-						<div class="dxbs-fl-ctrl dxbs-fl-ctrl-nc text-right">
-							<button class="btn btn-link" type="submit">Update</button>
-							<button class="btn btn-link" type="button" @onclick="@OnMusicianCancelButtonClick">Cancel</button>
-						</div>
-					</Template>
-				</DxFormLayoutItem>
-			</DxFormLayout>
-		</EditForm>
-	</EditFormTemplate>
-</DxDataGrid>
-
-<br />
-<br />
+}

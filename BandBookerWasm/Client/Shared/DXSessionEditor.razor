@@ -1,0 +1,40 @@
+﻿<DxDataGrid KeyFieldName="@nameof(Session.Id)"
+			Data="@Sessions"
+			ShowFilterRow="false"
+			ShowPager="false"
+			RowInserting="@InsertAction"
+			RowUpdating="@UpdateAction"
+			RowRemoving="@RemoveAction">
+	<Columns>
+		<DxDataGridCommandColumn Width="150px" />
+		<DxDataGridColumn Field="@nameof(Session.Name)" Caption="Session" />
+		<DxDataGridComboBoxColumn Field="EventId" Caption="Event"
+								  Data="@Events"
+								  ValueFieldName="@nameof(Event.Id)"
+								  TextFieldName="@nameof(Event.Name)">
+		</DxDataGridComboBoxColumn>
+	</Columns>
+</DxDataGrid>
+
+@code {
+	[Parameter]
+	public List<Session> Sessions { get; set; }
+	[Parameter]
+	public List<Event> Events { get; set; }
+
+
+	protected void InsertAction(IDictionary<string, object> values)
+	{
+		Sessions.Add(values.AssignToObject(new Session() { Id = Sessions.Count <= 0 ? 1 : Sessions.Max(x => x.Id) + 1 }));
+	}
+	protected void UpdateAction(Session session, IDictionary<string, object> newValues)
+	{
+		newValues.AssignToObject(session);
+	}
+
+	protected void RemoveAction(Session session)
+	{
+		Sessions.Remove(session);
+	}
+
+}

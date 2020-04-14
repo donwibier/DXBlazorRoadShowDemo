@@ -22,10 +22,24 @@ namespace BandBookerWasm.Shared
 				new Instrument { Id = 3, Name = "Bass" },
 				new Instrument { Id = 4, Name = "Drums" }
 			});
+
+			Events = new List<Event>(new Event[] { 
+				new Event {Id = 1, Name = "North Sea Jazz"},
+				new Event {Id = 2, Name = "PinkPop"},
+				new Event {Id = 3, Name = "BlueGrass Int"}
+			});
+			Sessions = new List<Session>(new Session[] {
+				new Session{Id = 1, Name = "Opening Act", Event = Events[0], EventId=Events[0].Id}
+			});
         }
 
         public List<Musician> Musicians { get; private set; }
 
 		public List<Instrument> Instruments { get; private set; }
+
+		public List<Event> Events { get; private set; }
+
+		public List<Session> Sessions { get; private set; }
+
 	}
 }

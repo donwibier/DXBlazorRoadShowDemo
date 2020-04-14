@@ -1,0 +1,34 @@
+﻿
+<DxDataGrid KeyFieldName="@nameof(Instrument.Id)"
+			Data="@Instruments"
+			ShowFilterRow="false"
+			ShowPager="false"
+			RowInserting="@InstrumentInsertAction"
+			RowUpdating="@InstrumentUpdateAction"
+			RowRemoving="@InstrumentRemoveAction">
+	<Columns>
+		<DxDataGridCommandColumn Width="150px" />
+		<DxDataGridColumn Field="@nameof(Instrument.Name)" Caption="Instrument" />
+	</Columns>
+</DxDataGrid>
+
+@code {
+	[Parameter]
+	public List<Instrument> Instruments { get; set; }
+
+
+	protected void InstrumentInsertAction(IDictionary<string, object> values)
+	{
+		Instruments.Add(values.AssignToObject(new Instrument() { Id = Instruments.Count <= 0 ? 1 : Instruments.Max(x => x.Id) + 1 }));
+	}
+	protected void InstrumentUpdateAction(Instrument instrument, IDictionary<string, object> newValues)
+	{
+		newValues.AssignToObject(instrument);
+	}
+
+	protected void InstrumentRemoveAction(Instrument instrument)
+	{
+		Instruments.Remove(instrument);
+	}
+
+}

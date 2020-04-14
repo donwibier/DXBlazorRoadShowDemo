@@ -1,0 +1,61 @@
+﻿
+<DxCheckBox Checked="@UseTagBox" CheckedChanged="@Update(c=>UseTagBox=c)">Use DevExpress TagBox instead of DXObjectPicker</DxCheckBox>
+<DxDataGrid @ref="gridMusicians" @key="keyMusicians" KeyFieldName="@nameof(Musician.Id)"
+			Data="@Musicians"
+			ShowFilterRow="false"
+			ShowPager="false"
+			RowInsertStart="@(() => OnMusicianEditing(null))"
+			RowEditStart="@((musician) => OnMusicianEditing(musician))"
+			RowRemoving="@((musician) => OnMusicianRemoving(musician))">
+	<Columns>
+		<DxDataGridCommandColumn Width="150px" />
+		<DxDataGridColumn Field="@nameof(Instrument.Name)" Caption="Musician" />
+	</Columns>
+	<EditFormTemplate>
+		<EditForm Model="@musicianModel" Context="MusicianEditCtx" OnValidSubmit="@MusicianSubmitAction">
+			<DataAnnotationsValidator />
+			<DxFormLayout>
+				<DxFormLayoutItem Caption="Musician name:" ColSpanMd="12" Context="MusicianEditFormCtx">
+					<Template>
+						<DxTextBox @bind-Text="@musicianModel.Name" />
+					</Template>
+				</DxFormLayoutItem>
+				<DxFormLayoutItem Caption="Instruments:" ColSpanMd="12" Context="MusicianEditFormCtx">
+					<Template>
+						@if (UseTagBox)
+						{
+							<DxTagBox NullText="Select the instruments this musician plays"
+									  Data="@Instruments"
+									  @bind-SelectedItems="@musicianModel.Instruments"
+									  TextFieldName="Name" />
+						}
+						else
+						{
+							<DXObjectPicker AllItems="@Instruments"
+											SelectedItems="@musicianModel.InstrumentsList"
+											ItemType="Instrument"
+											ItemTypePlural="Instruments"
+											TextPropertyName="Name">
+							</DXObjectPicker>
+						}
+					</Template>
+				</DxFormLayoutItem>
+
+				<DxFormLayoutItem ColSpanMd="12" Context="MusicianEditFormCtx">
+					<Template>
+						<ValidationSummary />
+					</Template>
+				</DxFormLayoutItem>
+				<DxFormLayoutItem ColSpanMd="12" Context="MusicianEditFormCtx">
+					<Template>
+						<div class="dxbs-fl-ctrl dxbs-fl-ctrl-nc text-right">
+							<button class="btn btn-link" type="submit">Update</button>
+							<button class="btn btn-link" type="button" @onclick="@OnMusicianCancelButtonClick">Cancel</button>
+						</div>
+					</Template>
+				</DxFormLayoutItem>
+			</DxFormLayout>
+		</EditForm>
+	</EditFormTemplate>
+</DxDataGrid>
+

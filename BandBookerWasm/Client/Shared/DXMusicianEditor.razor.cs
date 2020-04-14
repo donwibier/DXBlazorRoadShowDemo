@@ -1,44 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ComponentModel.DataAnnotations;
-using BandBookerWasm.Shared.Models;
-using Microsoft.AspNetCore.Components;
-using BandBookerWasm.Shared;
+﻿using BandBookerWasm.Shared.Models;
 using DevExpress.Blazor;
+using Microsoft.AspNetCore.Components;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace BandBookerWasm.Client.Pages
+namespace BandBookerWasm.Client.Shared
 {
-    public partial class Index : ComponentBase
-    {
-        [Inject] public BandBookerDataManager DataMan { get; set; }
-
-        List<Instrument> DummySelection { get; set; } = new List<Instrument>(); //<-- for testing the object picker
-
-        /* Instruments code */
-
-        public List<Instrument> Instruments { get => DataMan.Instruments; }
-
-        protected void InstrumentInsertAction(IDictionary<string, object> values)
-        {            
-            Instruments.Add(values.AssignToObject(new Instrument() { Id = Instruments.Count() + 1 }));
-        }
-		protected void InstrumentUpdateAction(Instrument instrument, IDictionary<string, object> newValues)
-        {
-            newValues.AssignToObject(instrument);
-        }
-
-        protected void InstrumentRemoveAction(Instrument instrument)
-        {
-            Instruments.Remove(instrument);
-        }
-
-        /* Musicians code */
+	public partial class DXMusicianEditor
+	{
         DxDataGrid<Musician> gridMusicians;
-        public List<Musician> Musicians { get => DataMan.Musicians; }
+        [Parameter]
+        public List<Musician> Musicians { get; set; } // => DataMan.Musicians; }
+        [Parameter]
+        public List<Instrument> Instruments { get; set; }
 
-		#region Edit model to be used in the editor of the grid 
-		class MusicianEditModel
+        public bool UseTagBox { get; set; }
+        public Action<bool> Update(Action<bool> set)
+        {
+            return (v) => { set(v); InvokeAsync(StateHasChanged); };
+        }
+
+        #region Edit model to be used in the editor of the grid 
+        class MusicianEditModel
         {
             public MusicianEditModel(Musician musician)
             {
@@ -48,25 +34,30 @@ namespace BandBookerWasm.Client.Pages
                     Musician = new Musician();
                     IsNewRow = true;
                 }
-                
+
                 Name = Musician.Name;
-                Instruments = new List<Instrument>(Musician.Instruments);                
+                Instruments = new List<Instrument>(Musician.Instruments);
             }
 
             public Action StateHasChanged { get; set; }
             public Musician Musician { get; set; }
             public bool IsNewRow { get; set; }
-            
+
             public List<Instrument> AllInstruments { get; set; }
 
             // model properties
             [Required]
             public string Name { get; set; }
-            public List<Instrument> Instruments { get; set; }            
-            
+            public IEnumerable<Instrument> Instruments
+            {
+                // Need to get an IEnumerable for the DXTagBox
+                get => InstrumentsList;
+                set => InstrumentsList = new List<Instrument>(value);
+            }
+            public List<Instrument> InstrumentsList { get; set; }
         }
-		#endregion
-		
+        #endregion
+
         MusicianEditModel musicianModel = null;
 
         protected void OnMusicianEditing(Musician musician)
@@ -86,7 +77,8 @@ namespace BandBookerWasm.Client.Pages
             musicianModel.Musician.Instruments = musicianModel.Instruments.ToList();
             if (musicianModel.IsNewRow)
             {
-                DataMan.Musicians.Add(musicianModel.Musician);
+                musicianModel.Musician.Id = Musicians.Count <= 0 ? 1 : Musicians.Max(x => x.Id) + 1;
+                Musicians.Add(musicianModel.Musician);
                 keyMusicians = Guid.NewGuid();
 
             }
@@ -98,9 +90,8 @@ namespace BandBookerWasm.Client.Pages
         {
             musicianModel = null;
             gridMusicians.CancelRowEdit();
-        }        
+        }
 
 
-        
     }
 }
