@@ -15,29 +15,36 @@ namespace BandBookerWasm.Client.Shared
 		{
 			CalendarStorage = new DxSchedulerDataStorage()
 			{
-				AppointmentsSource = Events,
+				AppointmentsSource = new List<Event>(),
 				AppointmentMappings = new DxSchedulerAppointmentMappings()
 				{
-					Type = "AppointmentType",
-					Start = "StartDate",
-					End = "EndDate",
-					Subject = "Name",
-					Description = "Description",
-					AllDay = "AllDay"
+					//Type = "AppointmentType",
+					Start = nameof(Event.StartDate),
+					End = nameof(Event.EndDate),
+					Subject = nameof(Event.Name),
+					Description = nameof(Event.Description),
+					AllDay = nameof(Event.AllDay),
+					StatusId = nameof(Event.Status)
 				}
 			};
 		}
+
 		[Parameter]
 		public List<Event> Events { get; set; }
 		[Parameter]
 		public List<Session> Sessions { get; set; }
 
-		public bool ShowCalendar { get; set; }
+		public bool ShowCalendar { get; set; };
 		public Action<bool> Update(Action<bool> set)
 		{
 			return (v) => { set(v); InvokeAsync(StateHasChanged); };
 		}
-
+		protected override void OnParametersSet()
+		{
+			base.OnParametersSet();
+			CalendarStorage.AppointmentsSource = Events;
+			CalendarStorage.RefreshData();
+		}
 
 		/* Grid methods */
 
@@ -56,7 +63,7 @@ namespace BandBookerWasm.Client.Shared
 		}
 
 		/* Calendar Methods */
-
+		
 		public DxSchedulerDataStorage CalendarStorage { get; set; }
 	}
 }
