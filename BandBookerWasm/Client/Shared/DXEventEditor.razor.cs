@@ -34,7 +34,7 @@ namespace BandBookerWasm.Client.Shared
 		[Parameter]
 		public List<Session> Sessions { get; set; }
 
-		public bool ShowCalendar { get; set; };
+		public bool ShowCalendar { get; set; }
 		public Action<bool> Update(Action<bool> set)
 		{
 			return (v) => { set(v); InvokeAsync(StateHasChanged); };
