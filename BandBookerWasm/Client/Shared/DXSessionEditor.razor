@@ -1,14 +1,14 @@
 ﻿<DxDataGrid KeyFieldName="@nameof(Session.Id)"
-			Data="@Sessions"
+			Data="@SessionList"
 			ShowFilterRow="false"
 			ShowPager="false"
-			RowInserting="@InsertAction"
+			RowInserting="@InsertAction"			
 			RowUpdating="@UpdateAction"
 			RowRemoving="@RemoveAction">
 	<Columns>
 		<DxDataGridCommandColumn Width="150px" />
 		<DxDataGridColumn Field="@nameof(Session.Name)" Caption="Session" />
-		<DxDataGridComboBoxColumn Field="EventId" Caption="Event"
+		<DxDataGridComboBoxColumn Field="EventId" Caption="Event" Visible="@ShowEventColumn"
 								  Data="@Events"
 								  ValueFieldName="@nameof(Event.Id)"
 								  TextFieldName="@nameof(Event.Name)">
@@ -16,19 +16,42 @@
 	</Columns>
 </DxDataGrid>
 
-@code {
+@code {	
+	public bool ShowEventColumn { get => MasterEventID == 0; }
 	[Parameter]
 	public List<Session> Sessions { get; set; }
 	[Parameter]
 	public List<Event> Events { get; set; }
+	[Parameter]
+	public int MasterEventID { get; set; } = 0;
 
+	public IEnumerable<Session> SessionList
+	{
+		get { return MasterEventID > 0 ? Sessions.Where(x => x.EventId == MasterEventID) : Sessions; }
+	}
 
 	protected void InsertAction(IDictionary<string, object> values)
 	{
+		if (values.ContainsKey(nameof(Session.EventId)))
+		{
+			values[nameof(Session.Event)] = values[nameof(Session.EventId)];
+			values[nameof(Session.EventId)] = ((Event)values[nameof(Session.Event)]).Id;
+		}
+		else if (MasterEventID > 0)
+			values[nameof(Session.EventId)] = MasterEventID;
+
 		Sessions.Add(values.AssignToObject(new Session() { Id = Sessions.Count <= 0 ? 1 : Sessions.Max(x => x.Id) + 1 }));
 	}
+
+
 	protected void UpdateAction(Session session, IDictionary<string, object> newValues)
 	{
+		if (newValues.ContainsKey(nameof(Session.EventId)))
+		{
+			newValues[nameof(Session.Event)] = newValues[nameof(Session.EventId)];
+			newValues[nameof(Session.EventId)] = ((Event)newValues[nameof(Session.Event)]).Id;
+		}
+
 		newValues.AssignToObject(session);
 	}
 

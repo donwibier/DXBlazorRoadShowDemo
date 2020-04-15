@@ -1,35 +1,33 @@
 ﻿
-
-<DxDataGrid KeyFieldName="@nameof(Event.Id)"
-			Data="@Events"
-			ShowFilterRow="false"
-			ShowPager="false"
-			RowInserting="@InsertAction"
-			RowUpdating="@UpdateAction"
-			RowRemoving="@RemoveAction">
-	<Columns>
-		<DxDataGridCommandColumn Width="150px" />
-		<DxDataGridColumn Field="@nameof(Event.Name)" Caption="Event" />
-	</Columns>
-</DxDataGrid>
-
-
-@code {
-	[Parameter]
-	public List<Event> Events { get; set; }
-
-
-	protected void InsertAction(IDictionary<string, object> values)
-	{
-		Events.Add(values.AssignToObject(new Event() { Id = Events.Count <= 0 ? 1 : Events.Max(x => x.Id) + 1 }));
-	}
-	protected void UpdateAction(Event e, IDictionary<string, object> newValues)
-	{
-		newValues.AssignToObject(e);
-	}
-
-	protected void RemoveAction(Event e)
-	{
-		Events.Remove(e);
-	}
+<DxCheckBox Checked="@ShowCalendar" CheckedChanged="@Update(c => { ShowCalendar = c; if (c) CalendarStorage.RefreshData(); })">Show Events in Calendar</DxCheckBox>
+@if (!ShowCalendar)
+{
+	<DxDataGrid KeyFieldName="@nameof(Event.Id)"
+				Data="@Events"
+				ShowFilterRow="false"
+				ShowPager="false"
+				AutoCollapseDetailRow="true" 
+				ShowDetailRow="true"
+				RowInserting="@InsertAction"
+				RowUpdating="@UpdateAction"
+				RowRemoving="@RemoveAction">
+		<Columns>
+			<DxDataGridCommandColumn Width="150px" />
+			<DxDataGridDateEditColumn Field="@nameof(Event.StartDate)" Caption="Start" DisplayFormatString="d"></DxDataGridDateEditColumn>
+			<DxDataGridDateEditColumn Field="@nameof(Event.EndDate)" Caption="End" DisplayFormatString="d"></DxDataGridDateEditColumn>
+			<DxDataGridColumn Field="@nameof(Event.Name)" Caption="Event" />
+			<DxDataGridColumn Field="@nameof(Event.Description)" Caption="Description" />
+		</Columns>
+		<DetailRowTemplate>
+			<DXSessionEditor Sessions="@Sessions" 
+							 MasterEventID="@context.Id"
+							 Events="@Events"></DXSessionEditor>
+		</DetailRowTemplate>
+	</DxDataGrid>
+}
+else
+{
+	<DxScheduler StartDate="@DateTime.Today" DataStorage="@CalendarStorage">
+		<DxSchedulerWeekView ShowWorkTimeOnly="false"></DxSchedulerWeekView>
+	</DxScheduler>
 }

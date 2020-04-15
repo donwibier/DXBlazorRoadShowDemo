@@ -24,9 +24,9 @@ namespace BandBookerWasm.Shared
 			});
 
 			Events = new List<Event>(new Event[] { 
-				new Event {Id = 1, Name = "North Sea Jazz"},
-				new Event {Id = 2, Name = "PinkPop"},
-				new Event {Id = 3, Name = "BlueGrass Int"}
+				new Event {Id = 1, Name = "North Sea Jazz", StartDate=DateTime.Now.AddDays(7), EndDate=DateTime.Now.AddDays(10), Status=1,AllDay=true },
+				new Event {Id = 2, Name = "PinkPop", StartDate=DateTime.Now.AddDays(9), EndDate=DateTime.Now.AddDays(13), Status=1, AllDay=true},
+				new Event {Id = 3, Name = "BlueGrass Int", StartDate=DateTime.Now.AddDays(12), EndDate=DateTime.Now.AddDays(13), Status=1, AllDay=true}
 			});
 			Sessions = new List<Session>(new Session[] {
 				new Session{Id = 1, Name = "Opening Act", Event = Events[0], EventId=Events[0].Id}
